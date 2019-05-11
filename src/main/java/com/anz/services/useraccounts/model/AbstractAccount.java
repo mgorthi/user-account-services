@@ -4,17 +4,10 @@ public abstract class AbstractAccount implements Account {
 	
 	private final String accountNumber;
 	private final String accountName;
-	private final AccountBalance accountBalance;
 	
-	protected AbstractAccount(String accountNumber, String accountName, AccountBalance accountBalance) {
+	protected AbstractAccount(String accountNumber, String accountName) {
 		this.accountNumber = accountNumber;
 		this.accountName = accountName;
-		this.accountBalance = accountBalance;
-	}
-	
-	@Override
-	public AccountBalance getAccountBalance() {
-		return accountBalance;
 	}
 	
 	@Override
@@ -26,4 +19,5 @@ public abstract class AbstractAccount implements Account {
 	public String getAccountNumber() {
 		return accountNumber;
 	}
+	
 }

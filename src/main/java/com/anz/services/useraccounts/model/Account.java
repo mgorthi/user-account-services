@@ -12,6 +12,4 @@ public interface Account {
 
 	AccountType getAccountType();
 	
-	AccountBalance getAccountBalance();
-
 }

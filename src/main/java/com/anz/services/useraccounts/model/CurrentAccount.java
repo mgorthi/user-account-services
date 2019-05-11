@@ -2,8 +2,8 @@ package com.anz.services.useraccounts.model;
 
 public final class CurrentAccount extends AbstractAccount {
 	
-	public CurrentAccount(String accountNumber, String accountName, AccountBalance accountBalance) {
-		super(accountNumber, accountName, accountBalance);
+	public CurrentAccount(String accountNumber, String accountName) {
+		super(accountNumber, accountName);
 	}
 	
 	@Override
