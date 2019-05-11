@@ -20,7 +20,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public List<Account> fetchAccounts(final Long userId) throws InvalidUserException {
 		if (userId == null || !isActiveAccountHolder(userId)) {
-			throw new InvalidUserException("Invalid user ");
+			throw new InvalidUserException("Invalid user");
 		}
 		return userAccountRepository.findAccountsByUserId(userId);
 	}
