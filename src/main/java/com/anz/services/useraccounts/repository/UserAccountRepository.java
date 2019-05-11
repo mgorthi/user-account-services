@@ -8,4 +8,6 @@ public interface UserAccountRepository {
 
 	List<Account> findAccountsByUserId(Long userId);
 
+	Account findByAccountId(String accountId);
+
 }

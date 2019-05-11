@@ -1,9 +1,11 @@
 package com.anz.services.useraccounts.model;
 
+import java.util.Currency;
+
 public final class SavingsAccount extends AbstractAccount {
 	
-	public SavingsAccount(String accountNumber, String accountName) {
-		super(accountNumber, accountName);
+	public SavingsAccount(final String accountNumber, final String accountName, final Currency currency) {
+		super(accountNumber, accountName, currency);
 	}
 	
 	@Override

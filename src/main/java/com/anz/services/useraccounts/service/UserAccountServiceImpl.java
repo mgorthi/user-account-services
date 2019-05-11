@@ -3,8 +3,12 @@ package com.anz.services.useraccounts.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.util.StringUtils;
+
 import com.anz.services.useraccounts.dto.AccountDto;
 import com.anz.services.useraccounts.dto.AccountDto.AccountDtoBuilder;
+import com.anz.services.useraccounts.dto.TransactionDto.TransactionDtoBuilder;
+import com.anz.services.useraccounts.dto.TransactionDto;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 import com.anz.services.useraccounts.repository.UserAccountRepository;
 import com.anz.services.useraccounts.repository.UserRepository;
@@ -39,6 +43,25 @@ public class UserAccountServiceImpl implements UserAccountService {
 			).collect(Collectors.toList());
 	}
 
+	@Override
+	public TransactionDto fetchTansactionsByUserAndAccount(Long userId, String accountId) throws InvalidUserException {
+		
+		if (userId == null || !isActiveAccountHolder(userId)) {
+			throw new InvalidUserException("Invalid user");
+		}
+		
+		if (StringUtils.isEmpty(accountId)) {
+			throw new IllegalArgumentException("Invalid accountId");
+		}
+		
+		
+		return TransactionDtoBuilder
+				.getInstance()
+				.account(userAccountRepository.findByAccountId(accountId))
+				.accountBalance(accountingService.fetchTransactions(userId, accountId))
+				.build();
+	}
+	
 	private boolean isActiveAccountHolder(Long userId) {
 		return userRepository.isUserActiveAccountHolder(userId);
 	}
