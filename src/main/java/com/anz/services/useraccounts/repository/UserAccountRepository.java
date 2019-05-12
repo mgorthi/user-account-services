@@ -6,7 +6,7 @@ import com.anz.services.useraccounts.model.Account;
 
 public interface UserAccountRepository {
 
-	List<Account> findAccountsByUserId(Long userId);
+	List<Account> findAllByUserId(Long userId);
 
 	Account findByAccountId(String accountId);
 

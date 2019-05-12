@@ -64,7 +64,7 @@ public class UserAccountServiceTest {
 			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")));
 			accounts.add(new SavingsAccount("1003", "AccountThree", Currency.getInstance("AUD")));
 			return accounts;
-		}).when(userAccountRepository).findAccountsByUserId(userId);
+		}).when(userAccountRepository).findAllByUserId(userId);
 		
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1000");
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1002");
@@ -98,7 +98,7 @@ public class UserAccountServiceTest {
 	public void testFetchAccountsShouldReturnEmptyForNoAccounts() throws InvalidUserException {
 		final long userId = 1L;
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
-		doAnswer(invocation -> Collections.emptyList()).when(userAccountRepository).findAccountsByUserId(userId);
+		doAnswer(invocation -> Collections.emptyList()).when(userAccountRepository).findAllByUserId(userId);
 		
 		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(userId);
 		
@@ -115,7 +115,7 @@ public class UserAccountServiceTest {
 			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD")));
 			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")));
 			return accounts;
-		}).when(userAccountRepository).findAccountsByUserId(userId);
+		}).when(userAccountRepository).findAllByUserId(userId);
 		
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1000");
 		doThrow(new RuntimeException("failed fetching balance")).when(accountingService).fetchAccountBalance("1002");
@@ -132,8 +132,8 @@ public class UserAccountServiceTest {
 		try {
 			userAccountService.fetchAccounts(null);
 			Assert.fail();
-		} catch (InvalidUserException e) {
-			assertThat(e.getMessage()).isEqualTo("Invalid user");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage()).isEqualTo("UserId cannot be empty");
 		}
 		
 	}

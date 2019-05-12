@@ -1,6 +1,6 @@
 package com.anz.services.useraccounts.exception;
 
-public class InvalidUserException extends Exception {
+public class InvalidUserException extends RuntimeException {
 	
 	private static final long serialVersionUID = 272302680521145341L;
 

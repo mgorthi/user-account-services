@@ -10,7 +10,7 @@ import com.anz.services.useraccounts.model.Account;
 public class UserAccountRepositoryImpl implements UserAccountRepository {
 	
 	@Override
-	public List<Account> findAccountsByUserId(Long userId) {
+	public List<Account> findAllByUserId(Long userId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

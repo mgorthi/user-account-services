@@ -42,7 +42,7 @@ public final class TransactionDto {
 			return this;
 		}
 		
-		public TransactionDtoBuilder accountBalance(List<Transaction> transactions) {
+		public TransactionDtoBuilder transactions(List<Transaction> transactions) {
 			this.transactions = transactions;
 			return this;
 		}

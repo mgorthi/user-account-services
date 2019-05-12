@@ -10,8 +10,8 @@ import org.springframework.util.StringUtils;
 import com.anz.services.useraccounts.dto.AccountDto;
 import com.anz.services.useraccounts.dto.AccountDto.AccountDtoBuilder;
 import com.anz.services.useraccounts.dto.AccountDto.AccountDtoStatus;
-import com.anz.services.useraccounts.dto.TransactionDto.TransactionDtoBuilder;
 import com.anz.services.useraccounts.dto.TransactionDto;
+import com.anz.services.useraccounts.dto.TransactionDto.TransactionDtoBuilder;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 import com.anz.services.useraccounts.model.AccountBalance;
 import com.anz.services.useraccounts.repository.UserAccountRepository;
@@ -32,13 +32,18 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	public List<AccountDto> fetchAccounts(final Long userId) throws InvalidUserException {
-		if (userId == null || !isActiveAccountHolder(userId)) {
+	public List<AccountDto> fetchAccounts(final Long userId) {
+		
+		if (userId == null) {
+			throw new IllegalArgumentException("UserId cannot be empty");
+		}
+		
+		if (!isActiveAccountHolder(userId)) {
 			throw new InvalidUserException("Invalid user");
 		}
 		
 		return userAccountRepository
-			.findAccountsByUserId(userId)
+			.findAllByUserId(userId)
 			.stream()
 			.parallel()
 			.map(account -> {
@@ -59,21 +64,20 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	public TransactionDto fetchTansactionsByUserAndAccount(Long userId, String accountId) throws InvalidUserException {
+	public TransactionDto fetchTansactionsByUserAndAccount(final Long userId, final String accountId) {
 		
-		if (userId == null || !isActiveAccountHolder(userId)) {
+		if (userId == null || StringUtils.isEmpty(accountId)) {
+			throw new IllegalArgumentException("UserId and accountId cannot be empty");
+		}
+		
+		if (!isActiveAccountHolder(userId)) {
 			throw new InvalidUserException("Invalid user");
 		}
-		
-		if (StringUtils.isEmpty(accountId)) {
-			throw new IllegalArgumentException("Invalid accountId");
-		}
-		
 		
 		return TransactionDtoBuilder
 				.getInstance()
 				.account(userAccountRepository.findByAccountId(accountId))
-				.accountBalance(accountingService.fetchTransactions(userId, accountId))
+				.transactions(accountingService.fetchTransactions(userId, accountId))
 				.build();
 	}
 	
