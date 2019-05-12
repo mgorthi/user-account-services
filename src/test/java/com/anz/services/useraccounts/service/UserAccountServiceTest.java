@@ -4,6 +4,7 @@ import static com.anz.services.useraccounts.model.Account.AccountType.CURRENT;
 import static com.anz.services.useraccounts.model.Account.AccountType.SAVINGS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.anz.services.useraccounts.dto.AccountDto;
+import com.anz.services.useraccounts.dto.AccountDto.AccountDtoStatus;
 import com.anz.services.useraccounts.dto.TransactionDto;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 import com.anz.services.useraccounts.model.Account;
@@ -53,7 +55,7 @@ public class UserAccountServiceTest {
 	}
 	
 	@Test
-	public void testServiceShouldFetchAccountsForValidUser() throws InvalidUserException {
+	public void testFetchAccountsShouldFetchAccountsForValidUser() throws InvalidUserException {
 		final long userId = 1L;
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
 		doAnswer(invocation -> {
@@ -93,7 +95,7 @@ public class UserAccountServiceTest {
 	}
 	
 	@Test
-	public void testServiceShouldReturnEmptyForNoAccounts() throws InvalidUserException {
+	public void testFetchAccountsShouldReturnEmptyForNoAccounts() throws InvalidUserException {
 		final long userId = 1L;
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
 		doAnswer(invocation -> Collections.emptyList()).when(userAccountRepository).findAccountsByUserId(userId);
@@ -105,7 +107,28 @@ public class UserAccountServiceTest {
 	}
 	
 	@Test
-	public void testServiceShouldThrowForNullUser() {
+	public void testAccountDtoStatusToBeErrorOnFailedFetchAccountsCall() throws InvalidUserException {
+		final long userId = 1L;
+		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
+		doAnswer(invocation -> {
+			List<Account> accounts = new ArrayList<>();
+			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD")));
+			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")));
+			return accounts;
+		}).when(userAccountRepository).findAccountsByUserId(userId);
+		
+		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1000");
+		doThrow(new RuntimeException("failed fetching balance")).when(accountingService).fetchAccountBalance("1002");
+		
+		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(userId);
+		assertThat(fetchedAccounts).isNotNull();
+		assertThat(fetchedAccounts.size()).isEqualTo(2);
+		assertThat(fetchedAccounts.get(0).getStatus()).isEqualTo(AccountDtoStatus.SUCCESS);
+		assertThat(fetchedAccounts.get(1).getStatus()).isEqualTo(AccountDtoStatus.ERROR);
+	}
+	
+	@Test
+	public void testFetchAccountsShouldThrowForNullUser() {
 		try {
 			userAccountService.fetchAccounts(null);
 			Assert.fail();
@@ -117,7 +140,7 @@ public class UserAccountServiceTest {
 	
 
 	@Test
-	public void testServiceShouldThrowForInActiveUser() {
+	public void testFetchAccountsShouldThrowForInActiveUser() {
 		long userId = 100L;
 		doAnswer(invocation -> false).when(userRepository).isUserActiveAccountHolder(userId);
 		try {

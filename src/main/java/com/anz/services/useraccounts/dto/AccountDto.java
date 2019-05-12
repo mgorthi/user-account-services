@@ -5,12 +5,18 @@ import com.anz.services.useraccounts.model.AccountBalance;
 
 public final class AccountDto {
 	
+	public enum AccountDtoStatus {
+		SUCCESS, ERROR
+	}
+	
 	private final Account account;
 	private final AccountBalance accountBalance;
+	private final AccountDtoStatus status;
 	
-	private AccountDto(final Account account, final AccountBalance accountBalance) {
+	private AccountDto(final Account account, final AccountBalance accountBalance, final AccountDtoStatus status) {
 		this.account = account;
 		this.accountBalance = accountBalance;
+		this.status = status;
 	}
 	
 	public Account getAccount() {
@@ -20,11 +26,16 @@ public final class AccountDto {
 	public AccountBalance getAccountBalance() {
 		return accountBalance;
 	}
+	
+	public AccountDtoStatus getStatus() {
+		return status;
+	}
 
 	public static class AccountDtoBuilder {
 		
 		private Account account;
 		private AccountBalance accountBalance;
+		private AccountDtoStatus status;
 
 		private AccountDtoBuilder() {}
 		
@@ -43,8 +54,14 @@ public final class AccountDto {
 		}
 		
 		public AccountDto build() {
-			return new AccountDto(this.account, this.accountBalance);
+			return new AccountDto(this.account, this.accountBalance, this.status);
 		}
+
+		public AccountDtoBuilder status(AccountDtoStatus status) {
+			this.status = status;
+			return this;
+		}
+		
 		
 	}
 }

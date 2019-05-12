@@ -6,6 +6,7 @@ import com.anz.services.useraccounts.dto.AccountDto;
 import com.anz.services.useraccounts.dto.TransactionDto;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 
+
 public interface UserAccountService {
 
 	public List<AccountDto> fetchAccounts(Long userId) throws InvalidUserException;
