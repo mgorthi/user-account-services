@@ -76,7 +76,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		
 		return TransactionDtoBuilder
 				.getInstance()
-				.account(userAccountRepository.findByAccountId(accountId))
+				.account(userAccountRepository.findByAccountNumber(accountId))
 				.transactions(accountingService.fetchTransactions(userId, accountId))
 				.build();
 	}

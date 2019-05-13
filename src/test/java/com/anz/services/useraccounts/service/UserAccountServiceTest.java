@@ -157,7 +157,7 @@ public class UserAccountServiceTest {
 		final long userId = 1L;
 		final String accountId = "1000";
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
-		doAnswer(invocation -> new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"))).when(userAccountRepository).findByAccountId(accountId);
+		doAnswer(invocation -> new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"))).when(userAccountRepository).findByAccountNumber(accountId);
 		
 		doAnswer(invocation -> {
 			List<Transaction> transactions = new ArrayList<>();
