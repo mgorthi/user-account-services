@@ -31,10 +31,11 @@ import com.anz.services.useraccounts.dto.AccountDto.AccountDtoStatus;
 import com.anz.services.useraccounts.dto.TransactionDto.TransactionDtoBuilder;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 import com.anz.services.useraccounts.model.AccountBalance;
+import com.anz.services.useraccounts.model.AccountHolder;
 import com.anz.services.useraccounts.model.CurrentAccount;
 import com.anz.services.useraccounts.model.SavingsAccount;
 import com.anz.services.useraccounts.model.Transaction;
-import com.anz.services.useraccounts.model.Transaction.TransactionType;
+import com.anz.services.useraccounts.model.TransactionType;
 import com.anz.services.useraccounts.service.UserAccountService;
 
 @RunWith(SpringRunner.class)
@@ -51,13 +52,15 @@ public class UserAccountsControllerTest {
     public void returnAccountsWhenFindAccountsByValidUserId() throws Exception {
 		
         doAnswer(invocation -> {
+        	AccountHolder accountHolder = new AccountHolder();
+			accountHolder.setId(1L);
         	AccountDto account1 = AccountDtoBuilder.getInstance()
-        			.account(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD")))
+        			.account(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder))
         			.accountBalance(new AccountBalance("100", LocalDate.of(2019, 01, 22)))
         			.status(AccountDtoStatus.SUCCESS)
         			.build();
         	AccountDto account2 = AccountDtoBuilder.getInstance()
-        			.account(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")))
+        			.account(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder))
         			.accountBalance(new AccountBalance("100", LocalDate.of(2019, 01, 22)))
         			.status(AccountDtoStatus.SUCCESS)
         			.build();
@@ -114,11 +117,13 @@ public class UserAccountsControllerTest {
     public void returnTransactionsWhenFetchTansactionsByValidUserAndValidAccount() throws Exception {
 		
         doAnswer(invocation -> {
+        	AccountHolder accountHolder = new AccountHolder();
+			accountHolder.setId(1L);
         	List<Transaction> txns = new ArrayList<>();
         	txns.add(new Transaction(new BigDecimal("100"), TransactionType.DEBIT, LocalDateTime.of(LocalDate.of(2019, 02, 05), LocalTime.of(13, 30)), "debit 100"));
         	txns.add(new Transaction(new BigDecimal("100"), TransactionType.CREDIT, LocalDateTime.of(LocalDate.of(2019, 01, 05), LocalTime.of(13, 30)), "credit 100"));
         	return TransactionDtoBuilder.getInstance()
-    				.account(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")))
+    				.account(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder))
     				.transactions(txns)
     				.build();
         	

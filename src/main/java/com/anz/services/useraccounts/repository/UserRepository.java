@@ -11,6 +11,6 @@ public interface UserRepository  extends CrudRepository<AccountHolder, Long> {
 	@Query("select a.active "
 			+ " from AccountHolder a "
 			+ " where a.id=:id")
-	boolean isUserActiveAccountHolder(@Param("id") Long id);
+	Boolean isUserActiveAccountHolder(@Param("id") Long id);
 
 }

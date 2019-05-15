@@ -2,6 +2,7 @@ package com.anz.services.useraccounts.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -10,36 +11,39 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Transaction {
-	
-	public static enum TransactionType {
-		DEBIT, CREDIT
-	}
 	
 	@Id
 	@SequenceGenerator(name="transaction_seq", sequenceName="transaction_seq", allocationSize=1)
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="transaction_seq")
 	private Long id;
 	
+	@NotNull
 	private LocalDateTime transactionDateTime;
 	
+	@NotNull
 	private BigDecimal amount;
 	
+	@NotNull
 	private TransactionType transactionType;
 	
 	private String narrative;
 	
 	@ManyToOne
 	@JoinColumn(name = "account_id")
-	private AbstractAccount account;
+	private Account account;
 	
 	public Transaction() {
 		
 	}
 	
 	public Transaction(final BigDecimal amount, final TransactionType transactionType, final LocalDateTime transactionDateTime, final String narrative) {
+		Objects.requireNonNull(transactionDateTime, "transactionDateTime cannot be null");
+		Objects.requireNonNull(amount, "amount cannot be null");
+		Objects.requireNonNull(transactionType, "transactionType cannot be null");
 		this.transactionDateTime = transactionDateTime;
 		this.amount = amount;
 		this.transactionType = transactionType;
@@ -70,11 +74,11 @@ public class Transaction {
 		return narrative;
 	}
 
-	public AbstractAccount getAccount() {
+	public Account getAccount() {
 		return account;
 	}
 
-	public void setAccount(AbstractAccount account) {
+	public void setAccount(Account account) {
 		this.account = account;
 	}
 

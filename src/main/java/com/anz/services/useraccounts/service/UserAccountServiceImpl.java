@@ -45,7 +45,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 		return userAccountRepository
 			.findAllByUserId(userId)
 			.stream()
-			.parallel()
 			.map(account -> {
 				AccountBalance accountBalance = null;
 				AccountDtoBuilder builder = AccountDtoBuilder.getInstance();
@@ -64,9 +63,9 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	public TransactionDto fetchTansactionsByUserAndAccount(final Long userId, final String accountId) {
+	public TransactionDto fetchTansactionsByUserAndAccount(final Long userId, final String accountNumber) {
 		
-		if (userId == null || StringUtils.isEmpty(accountId)) {
+		if (userId == null || StringUtils.isEmpty(accountNumber)) {
 			throw new IllegalArgumentException("UserId and accountId cannot be empty");
 		}
 		
@@ -76,8 +75,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 		
 		return TransactionDtoBuilder
 				.getInstance()
-				.account(userAccountRepository.findByAccountNumber(accountId))
-				.transactions(accountingService.fetchTransactions(userId, accountId))
+				.account(userAccountRepository.findByAccountNumber(accountNumber))
+				.transactions(accountingService.fetchTransactions(userId, accountNumber))
 				.build();
 	}
 	

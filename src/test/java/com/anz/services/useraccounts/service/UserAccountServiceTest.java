@@ -1,7 +1,7 @@
 package com.anz.services.useraccounts.service;
 
-import static com.anz.services.useraccounts.model.Account.AccountType.CURRENT;
-import static com.anz.services.useraccounts.model.Account.AccountType.SAVINGS;
+import static com.anz.services.useraccounts.model.AccountType.CURRENT;
+import static com.anz.services.useraccounts.model.AccountType.SAVINGS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -28,10 +28,11 @@ import com.anz.services.useraccounts.dto.TransactionDto;
 import com.anz.services.useraccounts.exception.InvalidUserException;
 import com.anz.services.useraccounts.model.Account;
 import com.anz.services.useraccounts.model.AccountBalance;
+import com.anz.services.useraccounts.model.AccountHolder;
 import com.anz.services.useraccounts.model.CurrentAccount;
 import com.anz.services.useraccounts.model.SavingsAccount;
 import com.anz.services.useraccounts.model.Transaction;
-import com.anz.services.useraccounts.model.Transaction.TransactionType;
+import com.anz.services.useraccounts.model.TransactionType;
 import com.anz.services.useraccounts.repository.UserAccountRepository;
 import com.anz.services.useraccounts.repository.UserRepository;
 
@@ -60,9 +61,11 @@ public class UserAccountServiceTest {
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
 		doAnswer(invocation -> {
 			List<Account> accounts = new ArrayList<>();
-			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD")));
-			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")));
-			accounts.add(new SavingsAccount("1003", "AccountThree", Currency.getInstance("AUD")));
+			AccountHolder accountHolder = new AccountHolder();
+			accountHolder.setId(1L);
+			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder));
+			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder));
+			accounts.add(new SavingsAccount("1003", "AccountThree", Currency.getInstance("AUD"), accountHolder));
 			return accounts;
 		}).when(userAccountRepository).findAllByUserId(userId);
 		
@@ -111,9 +114,11 @@ public class UserAccountServiceTest {
 		final long userId = 1L;
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
 		doAnswer(invocation -> {
+			AccountHolder accountHolder = new AccountHolder();
+			accountHolder.setId(1L);
 			List<Account> accounts = new ArrayList<>();
-			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD")));
-			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD")));
+			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder));
+			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder));
 			return accounts;
 		}).when(userAccountRepository).findAllByUserId(userId);
 		
@@ -157,7 +162,9 @@ public class UserAccountServiceTest {
 		final long userId = 1L;
 		final String accountId = "1000";
 		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
-		doAnswer(invocation -> new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"))).when(userAccountRepository).findByAccountNumber(accountId);
+		AccountHolder accountHolder = new AccountHolder();
+		accountHolder.setId(1L);
+		doAnswer(invocation -> new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder)).when(userAccountRepository).findByAccountNumber(accountId);
 		
 		doAnswer(invocation -> {
 			List<Transaction> transactions = new ArrayList<>();
@@ -185,23 +192,4 @@ public class UserAccountServiceTest {
 		assertThat(transactionDto.getAccount().getCurrency()).isEqualTo(Currency.getInstance("AUD"));
 	}
 	
-	
-	/*
-	@Test
-	public void testServiceShouldReturnValidAccountTypes() {
-		
-		try {
-			userAccountService.fetchAccounts(100L);
-			Assert.fail();
-		} catch (InvalidUserException e) {
-			assertThat(e.getMessage()).isEqualTo("Invalid user");
-		}
-		
-	}
-	
-	@Test
-	public void testServiceShouldReturnOnlyMaxConfiguredRecords() {
-		
-	}*/
-
 }

@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.util.StringUtils;
 
@@ -22,13 +23,16 @@ public class AccountBalance {
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="account_balance_seq")
 	private Long id;
 	
+	@NotNull
 	private BigDecimal openingBalance;
 	
+	@NotNull
 	private LocalDate balanceDate;
 	
+	@NotNull
 	@OneToOne
-	@JoinColumn(name = "account_id")
-	private AbstractAccount account;
+	@JoinColumn(name = "account_id", unique = true)
+	private Account account;
 	
 	public AccountBalance(final String openingBalance, final LocalDate balanceDate) {
 		Objects.requireNonNull(openingBalance, "balance cannot be null");
@@ -56,11 +60,11 @@ public class AccountBalance {
 		return balanceDate;
 	}
 
-	public AbstractAccount getAccount() {
+	public Account getAccount() {
 		return account;
 	}
 
-	public void setAccount(AbstractAccount account) {
+	public void setAccount(Account account) {
 		this.account = account;
 	}
 

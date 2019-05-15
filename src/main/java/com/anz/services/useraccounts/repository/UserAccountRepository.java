@@ -6,15 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.anz.services.useraccounts.model.AbstractAccount;
+import com.anz.services.useraccounts.model.Account;
 
-public interface UserAccountRepository extends CrudRepository<AbstractAccount, Long> {
+public interface UserAccountRepository extends CrudRepository<Account, Long> {
 	
 	@Query("select a "
-			+ " from AbstractAccount a "
+			+ " from Account a "
 			+ " where a.accountHolder.id=:id")
-	List<AbstractAccount> findAllByUserId(@Param("id") Long id);
+	List<Account> findAllByUserId(@Param("id") Long id);
 
-	AbstractAccount findByAccountNumber(String accountNumber);
+	Account findByAccountNumber(String accountNumber);
 
 }
