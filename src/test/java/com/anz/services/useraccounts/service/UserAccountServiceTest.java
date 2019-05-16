@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,13 +35,13 @@ import com.anz.services.useraccounts.model.SavingsAccount;
 import com.anz.services.useraccounts.model.Transaction;
 import com.anz.services.useraccounts.model.TransactionType;
 import com.anz.services.useraccounts.repository.UserAccountRepository;
-import com.anz.services.useraccounts.repository.UserRepository;
+import com.anz.services.useraccounts.repository.AccountHolderRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserAccountServiceTest {
 	
 	@Mock
-	private UserRepository userRepository;
+	private AccountHolderRepository userRepository;
 	
 	@Mock
 	private UserAccountRepository userAccountRepository;
@@ -57,23 +58,24 @@ public class UserAccountServiceTest {
 	
 	@Test
 	public void testFetchAccountsShouldFetchAccountsForValidUser() throws InvalidUserException {
-		final long userId = 1L;
-		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
+		AccountHolder accountHolder = new AccountHolder();
+		accountHolder.setId(1L);
+		accountHolder.setActive(true);
+		doAnswer(invocation -> Optional.of(accountHolder)).when(userRepository).findById(accountHolder.getId());
+		
 		doAnswer(invocation -> {
 			List<Account> accounts = new ArrayList<>();
-			AccountHolder accountHolder = new AccountHolder();
-			accountHolder.setId(1L);
 			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder));
 			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder));
 			accounts.add(new SavingsAccount("1003", "AccountThree", Currency.getInstance("AUD"), accountHolder));
 			return accounts;
-		}).when(userAccountRepository).findAllByUserId(userId);
+		}).when(userAccountRepository).findAllByUserId(accountHolder.getId());
 		
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1000");
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1002");
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1003");
 		
-		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(userId);
+		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(accountHolder.getId());
 		
 		assertThat(fetchedAccounts).isNotNull();
 		assertThat(fetchedAccounts.size()).isEqualTo(3);
@@ -99,11 +101,13 @@ public class UserAccountServiceTest {
 	
 	@Test
 	public void testFetchAccountsShouldReturnEmptyForNoAccounts() throws InvalidUserException {
-		final long userId = 1L;
-		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
-		doAnswer(invocation -> Collections.emptyList()).when(userAccountRepository).findAllByUserId(userId);
+		AccountHolder accountHolder = new AccountHolder();
+		accountHolder.setId(1L);
+		accountHolder.setActive(true);
+		doAnswer(invocation -> Optional.of(accountHolder)).when(userRepository).findById(accountHolder.getId());
+		doAnswer(invocation -> Collections.emptyList()).when(userAccountRepository).findAllByUserId(accountHolder.getId());
 		
-		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(userId);
+		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(accountHolder.getId());
 		
 		assertThat(fetchedAccounts).isNotNull();
 		assertThat(fetchedAccounts.size()).isEqualTo(0);
@@ -111,21 +115,21 @@ public class UserAccountServiceTest {
 	
 	@Test
 	public void testAccountDtoStatusToBeErrorOnFailedFetchAccountsCall() throws InvalidUserException {
-		final long userId = 1L;
-		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
+		AccountHolder accountHolder = new AccountHolder();
+		accountHolder.setId(1L);
+		accountHolder.setActive(true);
+		doAnswer(invocation -> Optional.of(accountHolder)).when(userRepository).findById(accountHolder.getId());
 		doAnswer(invocation -> {
-			AccountHolder accountHolder = new AccountHolder();
-			accountHolder.setId(1L);
 			List<Account> accounts = new ArrayList<>();
 			accounts.add(new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder));
 			accounts.add(new CurrentAccount("1002", "AccountTwo", Currency.getInstance("AUD"), accountHolder));
 			return accounts;
-		}).when(userAccountRepository).findAllByUserId(userId);
+		}).when(userAccountRepository).findAllByUserId(accountHolder.getId());
 		
 		doAnswer(invocation -> new AccountBalance("100", LocalDate.of(2019, 01, 22))).when(accountingService).fetchAccountBalance("1000");
 		doThrow(new RuntimeException("failed fetching balance")).when(accountingService).fetchAccountBalance("1002");
 		
-		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(userId);
+		List<AccountDto> fetchedAccounts = userAccountService.fetchAccounts(accountHolder.getId());
 		assertThat(fetchedAccounts).isNotNull();
 		assertThat(fetchedAccounts.size()).isEqualTo(2);
 		assertThat(fetchedAccounts.get(0).getStatus()).isEqualTo(AccountDtoStatus.SUCCESS);
@@ -138,7 +142,7 @@ public class UserAccountServiceTest {
 			userAccountService.fetchAccounts(null);
 			Assert.fail();
 		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage()).isEqualTo("UserId cannot be empty");
+			assertThat(e.getMessage()).isEqualTo("UserId cannot be empty.");
 		}
 		
 	}
@@ -146,37 +150,39 @@ public class UserAccountServiceTest {
 
 	@Test
 	public void testFetchAccountsShouldThrowForInActiveUser() {
-		long userId = 100L;
-		doAnswer(invocation -> false).when(userRepository).isUserActiveAccountHolder(userId);
+		AccountHolder accountHolder = new AccountHolder();
+		accountHolder.setId(1L);
+		accountHolder.setActive(false);
+		doAnswer(invocation -> Optional.of(accountHolder)).when(userRepository).findById(accountHolder.getId());
 		try {
-			userAccountService.fetchAccounts(userId);
+			userAccountService.fetchAccounts(accountHolder.getId());
 			Assert.fail();
 		} catch (InvalidUserException e) {
-			assertThat(e.getMessage()).isEqualTo("Invalid user");
+			assertThat(e.getMessage()).isEqualTo("Invalid user.");
 		}
 		
 	}
 
 	@Test
 	public void testServiceShouldFetchTansactionsByAccountForValidUser() throws InvalidUserException {
-		final long userId = 1L;
 		final String accountId = "1000";
-		doAnswer(invocation -> true).when(userRepository).isUserActiveAccountHolder(userId);
 		AccountHolder accountHolder = new AccountHolder();
 		accountHolder.setId(1L);
+		accountHolder.setActive(true);
+		doAnswer(invocation -> Optional.of(accountHolder)).when(userRepository).findById(accountHolder.getId());
 		doAnswer(invocation -> new SavingsAccount("1000", "AccountOne", Currency.getInstance("AUD"), accountHolder)).when(userAccountRepository).findByAccountNumber(accountId);
 		
 		doAnswer(invocation -> {
 			List<Transaction> transactions = new ArrayList<>();
 			transactions.add(new Transaction(new BigDecimal("100"), TransactionType.DEBIT, LocalDateTime.of(LocalDate.of(2019, 02, 05), LocalTime.of(13, 30)), ""));
-			transactions.add(new Transaction(new BigDecimal("200"), TransactionType.CREDIT, LocalDateTime.of(LocalDate.of(2019, 03, 05), LocalTime.of(13, 30)), ""));
+			transactions.add(new Transaction(new BigDecimal("200"), TransactionType.CREDIT, LocalDateTime.of(LocalDate.of(2019, 03, 05), LocalTime.of(13, 30)), null));
 			transactions.add(new Transaction(new BigDecimal("300"), TransactionType.DEBIT, LocalDateTime.of(LocalDate.of(2019, 04, 05), LocalTime.of(13, 30)), ""));
 			transactions.add(new Transaction(new BigDecimal("400"), TransactionType.CREDIT, LocalDateTime.of(LocalDate.of(2019, 05, 05), LocalTime.of(13, 30)), ""));
 			return transactions;
-		}).when(accountingService).fetchTransactions(userId, accountId);
+		}).when(accountingService).fetchTransactions(accountHolder.getId(), accountId);
 		
 		
-		TransactionDto transactionDto = userAccountService.fetchTansactionsByUserAndAccount(userId, accountId);
+		TransactionDto transactionDto = userAccountService.fetchTansactionsByUserAndAccount(accountHolder.getId(), accountId);
 		
 		assertThat(transactionDto).isNotNull();
 		assertThat(transactionDto.getAccount()).isNotNull();

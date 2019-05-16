@@ -14,13 +14,13 @@ import com.anz.services.useraccounts.model.AccountHolder;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class UserRepositoryTest {
+public class AccountHolderRepositoryTest {
 	
 	@Autowired
     private TestEntityManager entityManager;
  
     @Autowired
-    private UserRepository userRepository;
+    private AccountHolderRepository userRepository;
 
     @Test
     public void whenFindAllByUserId_thenReturnUserAccounts() {

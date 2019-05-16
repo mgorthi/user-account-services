@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.anz.services.useraccounts.model.AccountHolder;
 
-public interface UserRepository  extends CrudRepository<AccountHolder, Long> {
+public interface AccountHolderRepository  extends CrudRepository<AccountHolder, Long> {
 	
 	@Query("select a.active "
 			+ " from AccountHolder a "
